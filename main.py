@@ -12,6 +12,10 @@ coord = []
 initial_coord = []
 viewx = 0
 viewy = 0
+multiplier = 100.0
+
+rad_point = 0.15 * 0.75 * multiplier        #  0.05 * multiplier # for hand
+rad_view_point = 0.15 * 0.75 * multiplier   # 0.05 * multiplier
 
 fin = open("snake.in", "r")
 n = int(fin.readline())
@@ -21,16 +25,18 @@ for el in range(0, n):
     print(line.split(" "))
     (x, y) = line.split(" ")
 
-    initial_coord.append([float(x), float(y)])
+    initial_coord.append([float(x) * multiplier, float(y) * multiplier])
 
 (viewx, viewy) = strip(fin.readline()).split(" ")
+viewx = float(viewx) * multiplier
+viewy = float(viewy) * multiplier
 
 fin.close()
 
 with open("tst.out", "r") as fin:
     for line in fin.readlines():
         (fi, se) = line.split(" ")
-        coord.append([float(fi), float(se)])
+        coord.append([float(fi) * multiplier, float(se) * multiplier])
         # print(fi, se)
 
 initial_coord.append(initial_coord[0])
@@ -51,15 +57,18 @@ plt.plot(ixs, iys, color="green")
 # fig, ax = plt.subplots()
 ax = plt.gca()
 
-circle = plt.Circle((viewx, viewy), 0.01, color='yellow')
-# for point in coord:
-#     plt.fill([viewx, point[0]], [viewy, point[1]], color="black")
+circle = plt.Circle((viewx, viewy), rad_view_point, color='yellow')
+ax.add_artist(circle)
+for point in coord:
+    plt.fill([viewx, point[0]], [viewy, point[1]], color="black")
+    circle = plt.Circle(point, rad_point, color="blue")
+    ax.add_artist(circle)
 
 triangles = [[[viewx, viewy], coord[i], coord[i + 1]] for i in range(0, len(coord) - 1)]
 
-for tr in triangles:
-    plt.fill([x[0] for x in tr], [x[1] for x in tr], color=(rc(), rc(), rc()))
+# for tr in triangles:
+#     plt.fill([x[0] for x in tr], [x[1] for x in tr], color=(rc(), rc(), rc()))
 
-ax.add_artist(circle)
+
 
 plt.show()  # if you need...
