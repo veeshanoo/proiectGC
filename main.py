@@ -50,9 +50,11 @@ viewy = float(viewy)
 
 plt.figure()
 print(viewx, viewy)
-
+plt.plot(xs, ys, color="black")
 plt.fill(xs, ys, color="red")
+
 plt.plot(ixs, iys, color="green")
+plt.plot(xs, ys, color="black")
 
 # fig, ax = plt.subplots()
 ax = plt.gca()
@@ -64,10 +66,12 @@ for point in coord:
     circle = plt.Circle(point, rad_point, color="blue")
     ax.add_artist(circle)
 
-triangles = [[[viewx, viewy], coord[i], coord[i + 1]] for i in range(0, len(coord) - 1)]
 
+
+triangles = [[[viewx, viewy], coord[i], coord[i + 1]] for i in range(0, len(coord) - 1)]
+#
 # for tr in triangles:
-#     plt.fill([x[0] for x in tr], [x[1] for x in tr], color=(rc(), rc(), rc()))
+#    plt.fill([x[0] for x in tr], [x[1] for x in tr], color=(rc(), rc(), rc()))
 
 
 

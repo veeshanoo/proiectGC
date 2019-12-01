@@ -103,7 +103,6 @@ pair<Point, bool> getIsect(Point B) {
     return getDistSq(P, a.second) < getDistSq(P, b.second);
   });
 
-
   if (stops.empty())
     return {Point(0, 0), false};
   return {stops[0].second, true};
