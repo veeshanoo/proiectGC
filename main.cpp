@@ -3,6 +3,7 @@
 using namespace std;
 
 const double EPS = 1e-6;
+const double ANG_EPS = 1e-5;
 const double MUL = 1e2;
 
 struct Point {
@@ -20,6 +21,10 @@ struct Point {
 int N;
 vector<Point> pts;
 Point aux, P;
+
+bool isDifferent(double x, double y) {
+    return abs(x - y) > EPS;
+}
 
 pair<bool, Point> isect(Point A, Point B, Point C, Point D) {
 	double a1 = B.y - A.y; 
@@ -39,13 +44,17 @@ pair<bool, Point> isect(Point A, Point B, Point C, Point D) {
 		double y = (a1 * c2 - a2 * c1) / determinant; 
         Point a(x, y);
 		
-        if (a.x < min(A.x, B.x) || a.x > max(A.x, B.x))
+        if ((a.x < min(A.x, B.x) && isDifferent(a.x, min(A.x, B.x))) 
+        || (a.x > max(A.x, B.x) && isDifferent(a.x, max(A.x, B.x))))
             return make_pair(false, Point(-1, -1));
-        if (a.x < min(C.x, D.x) || a.x > max(C.x, D.x))
+        if ((a.x < min(C.x, D.x) && isDifferent(a.x, min(C.x, D.x))) 
+        || (a.x > max(C.x, D.x) && isDifferent(a.x, max(C.x, D.x))))
             return make_pair(false, Point(-1, -1));
-        if (a.y < min(A.y, B.y) || a.y > max(A.y, B.y))
+        if ((a.y < min(A.y, B.y) && isDifferent(a.y, min(A.y, B.y))) 
+        || (a.y > max(A.y, B.y) && isDifferent(a.y, max(A.y, B.y))))
             return make_pair(false, Point(-1, -1));
-        if (a.y < min(C.y, D.y) || a.y > max(C.y, D.y))
+        if ((a.y < min(C.y, D.y) && isDifferent(a.y, min(C.y, D.y))) 
+        || (a.y > max(C.y, D.y) && isDifferent(a.y, max(C.y, D.y))))
             return make_pair(false, Point(-1, -1));
         
         return make_pair(true, a); 
@@ -66,7 +75,7 @@ double getDistSqrt(Point A, Point B) {
     return sqrt(getDistSq(A, B));
 }
 
-Point getIsect(Point B) {
+pair<Point, bool> getIsect(Point B) {
     Point A = P;
     vector<pair<bool, Point> > stops;
     for (int i = 0; i < N; i++) {
@@ -95,13 +104,16 @@ Point getIsect(Point B) {
     // cout << "\n\n";
 
     Point ans;
-    for (auto stop : stops) {
-        if (stop.first == false)
-            return stop.second;
-        ans = stop.second;
-    }
+    // for (auto stop : stops) {
+    //     if (stop.first == false)
+    //         return stop.second;
+    //     ans = stop.second;
+    // }
 
-    return ans;
+    // return ans;
+    if (stops.empty())
+        return {Point(0, 0), false}; 
+    return {stops[0].second, true};
 }
 
 double delta(Point a, Point b, Point c) {
@@ -130,16 +142,68 @@ int main() {
     vector<Point> stops;
     for (int i = 0; i < N; i++) {
         auto pt = pts[i];
-        Point far = farAway(pt);
+        // Point far = farAway(pt);
         // cout << far.x << ' ' << far.y << '\n';
 
-        Point stop = getIsect(far);
-        stops.push_back(stop);
+
+        // dx = point[0] - view_p[0]
+        // rdy = point[1] - view_p[1]
+
+        // # for having the polygon in the trigonometric sorted order
+        // base_ang = atan2(rdy, rdx)
+        // ang = 0.0
+        // # cast 3 rays instead of one, for the case in which the ray touches and edge
+        // for i in range(0, 3):
+        //     if i == 0:
+        //         ang = base_ang - EPS
+        //     if i == 1:
+        //         ang = base_ang
+        //     if i == 2:
+        //         ang = base_ang + EPS
+        //     rdx = float64(MAX_DIST * cos(ang))
+        //     rdy = float64(MAX_DIST * sin(ang))
+
+        double rdx = pt.x - P.x;
+        double rdy = pt.y - P.y;
+
+        // double base_ang = atan2(rdx, rdy);
+        for (int j = 0; j < 3; j++) {
+            cerr << i << ' ' << j << '\n';
+            double newRdx = rdx;
+            double newRdy = rdy;
+            
+            if (j == 0) {
+                if (abs(rdy) < EPS)
+                    newRdy += ANG_EPS;
+                else newRdx += ANG_EPS;
+            }
+            if (j == 1) {
+                if (abs(rdy) < EPS)
+                    newRdy -= ANG_EPS;
+                else newRdx -= ANG_EPS;
+            }
+
+            Point far = farAway(Point(P.x + newRdx, P.y + newRdy));
+            auto [stop, status] = getIsect(far);
+            if (status == false)
+                continue;
+            cerr << "done\n";
+            stops.push_back(stop);
+        }
+
+        // Point stop = getIsect(far);
+        // stops.push_back(stop);
     }
 
     sort(stops.begin(), stops.end(), [](Point a, Point b) {
         return delta(P, a, b) > 0;
     });
+
+
+    for (auto it : stops) {
+        cout << it.x << ' ' << it.y << '\n';
+    }
+    return 0;
 
     // for (auto it : stops) {
     //     cout << it.x << ' ' << it.y << '\n';
@@ -170,20 +234,20 @@ int main() {
     //     cout << it.x << ' ' << it.y << '\n';
     // }
 
-    vector<Point> visiblePolygon;
-    for (auto it : finalPolygon) {
-        auto pt = it;
-        Point far = farAway(pt);
-        // cout << far.x << ' ' << far.y << '\n';
+    // vector<Point> visiblePolygon;
+    // for (auto it : finalPolygon) {
+    //     auto pt = it;
+    //     Point far = farAway(pt);
+    //     // cout << far.x << ' ' << far.y << '\n';
 
-        Point stop = getIsect(far);
-        if (getDistSqrt(P, it) < getDistSqrt(P, stop) || abs(getDistSqrt(P, it) - getDistSqrt(P, stop)) < EPS) 
-            visiblePolygon.push_back(it);
-    }
+    //     Point stop = getIsect(far);
+    //     if (getDistSqrt(P, it) < getDistSqrt(P, stop) || abs(getDistSqrt(P, it) - getDistSqrt(P, stop)) < EPS) 
+    //         visiblePolygon.push_back(it);
+    // }
     
-    for (auto it : visiblePolygon) {
-        cout << it.x << ' ' << it.y << '\n';
-    }
+    // for (auto it : visiblePolygon) {
+    //     cout << it.x << ' ' << it.y << '\n';
+    // }
 
     return 0;
 }
