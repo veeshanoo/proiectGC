@@ -42,7 +42,7 @@ plt.plot(ixs, iys, color="green")
 # fig, ax = plt.subplots()
 ax = plt.gca()
 
-circle = plt.Circle((viewx, viewy), 0.2, color='black')
+circle = plt.Circle((viewx, viewy), 0.2, color='yellow')
 
 ax.add_artist(circle)
 

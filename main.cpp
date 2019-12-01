@@ -10,6 +10,7 @@
 using namespace std;
 
 const double EPS = 1e-6;
+const double ANG_EPS = 1e-5;
 const double MUL = 1e2;
 
 struct Point {
@@ -27,6 +28,10 @@ struct Point {
 int N;
 vector<Point> pts;
 Point aux, P;
+
+bool isDifferent(double x, double y) {
+    return abs(x - y) > EPS;
+}
 
 pair<bool, Point> isect(Point A, Point B, Point C, Point D) {
 	double a1 = B.y - A.y; 
@@ -46,13 +51,17 @@ pair<bool, Point> isect(Point A, Point B, Point C, Point D) {
 		double y = (a1 * c2 - a2 * c1) / determinant; 
         Point a(x, y);
 		
-        if (a.x < min(A.x, B.x) || a.x > max(A.x, B.x))
+        if ((a.x < min(A.x, B.x) && isDifferent(a.x, min(A.x, B.x))) 
+        || (a.x > max(A.x, B.x) && isDifferent(a.x, max(A.x, B.x))))
             return make_pair(false, Point(-1, -1));
-        if (a.x < min(C.x, D.x) || a.x > max(C.x, D.x))
+        if ((a.x < min(C.x, D.x) && isDifferent(a.x, min(C.x, D.x))) 
+        || (a.x > max(C.x, D.x) && isDifferent(a.x, max(C.x, D.x))))
             return make_pair(false, Point(-1, -1));
-        if (a.y < min(A.y, B.y) || a.y > max(A.y, B.y))
+        if ((a.y < min(A.y, B.y) && isDifferent(a.y, min(A.y, B.y))) 
+        || (a.y > max(A.y, B.y) && isDifferent(a.y, max(A.y, B.y))))
             return make_pair(false, Point(-1, -1));
-        if (a.y < min(C.y, D.y) || a.y > max(C.y, D.y))
+        if ((a.y < min(C.y, D.y) && isDifferent(a.y, min(C.y, D.y))) 
+        || (a.y > max(C.y, D.y) && isDifferent(a.y, max(C.y, D.y))))
             return make_pair(false, Point(-1, -1));
         
         return make_pair(true, a); 
@@ -73,7 +82,7 @@ double getDistSqrt(Point A, Point B) {
     return sqrt(getDistSq(A, B));
 }
 
-Point getIsect(Point B) {
+pair<Point, bool> getIsect(Point B) {
     Point A = P;
     vector<pair<bool, Point> > stops;
     for (int i = 0; i < N; i++) {
@@ -94,21 +103,10 @@ Point getIsect(Point B) {
         return getDistSq(P, a.second) < getDistSq(P, b.second);
     });
 
-    // cout << B.x << ' ' << B.y << '\n';
-    // cout << "Points\n";
-    // for (auto it : stops) {
-    //     cout << it.second.x << ' ' << it.second.y << "  ";
-    // }
-    // cout << "\n\n";
 
-    Point ans;
-    for (auto stop : stops) {
-        if (stop.first == false)
-            return stop.second;
-        ans = stop.second;
-    }
-
-    return ans;
+    if (stops.empty())
+        return {Point(0, 0), false}; 
+    return {stops[0].second, true};
 }
 
 double delta(Point a, Point b, Point c) {
@@ -118,12 +116,6 @@ double delta(Point a, Point b, Point c) {
 int main() {
     ifstream cin("tst.in");
     ofstream cout("tst.out");
-    
-    // auto it = isect({0, 0}, {1, 1}, {1, 0}, {0, 1});
-    // cout << it.first << endl;
-    // cout << it.second.x << ' ' << it.second.y << endl;
-    // return 0;
-
 
     cin >> N;
     for (int i = 0; i < N; i++) {
@@ -137,60 +129,41 @@ int main() {
     vector<Point> stops;
     for (int i = 0; i < N; i++) {
         auto pt = pts[i];
-        Point far = farAway(pt);
-        // cout << far.x << ' ' << far.y << '\n';
 
-        Point stop = getIsect(far);
-        stops.push_back(stop);
+        double rdx = pt.x - P.x;
+        double rdy = pt.y - P.y;
+
+        for (int j = 0; j < 3; j++) {
+            double newRdx = rdx;
+            double newRdy = rdy;
+            
+            if (j == 0) {
+                if (abs(rdy) < EPS)
+                    newRdy += ANG_EPS;
+                else newRdx += ANG_EPS;
+            }
+            if (j == 1) {
+                if (abs(rdy) < EPS)
+                    newRdy -= ANG_EPS;
+                else newRdx -= ANG_EPS;
+            }
+
+            Point far = farAway(Point(P.x + newRdx, P.y + newRdy));
+            auto [stop, status] = getIsect(far);
+            if (status == false)
+                continue;
+            stops.push_back(stop);
+        }
     }
 
     sort(stops.begin(), stops.end(), [](Point a, Point b) {
         return delta(P, a, b) > 0;
     });
 
-    // for (auto it : stops) {
-    //     cout << it.x << ' ' << it.y << '\n';
-    // }
+    // stops.resize(distance(stops.begin(), unique(stops.begin(), stops.end())));
 
-    vector<Point> finalPolygon;
-    for (int i = 0; i < N; i++) {
-        vector<Point> newPts; 
-        Point A = pts[i];
-        Point B = pts[i + 1];
-        for (auto it : stops) {
-            if (abs(getDistSqrt(A, it) + getDistSqrt(B, it) - getDistSqrt(A, B)) < EPS) {
-                newPts.push_back(it);
-            }
-        }
-
-        sort(newPts.begin(), newPts.end(), [&](Point a, Point b) {
-            return getDistSqrt(A, a) < getDistSqrt(A, b);
-        });
-
-        finalPolygon.push_back(A);
-        for (auto it : newPts)
-            finalPolygon.push_back(it);
-        
-    }
-
-    // for (auto it : finalPolygon) {
-    //     cout << it.x << ' ' << it.y << '\n';
-    // }
-
-    vector<Point> visiblePolygon;
-    for (auto it : finalPolygon) {
-        auto pt = it;
-        Point far = farAway(pt);
-        // cout << far.x << ' ' << far.y << '\n';
-
-        Point stop = getIsect(far);
-        if (getDistSqrt(P, it) < getDistSqrt(P, stop) || abs(getDistSqrt(P, it) - getDistSqrt(P, stop)) < EPS) 
-            visiblePolygon.push_back(it);
-    }
-    
-    for (auto it : visiblePolygon) {
+    for (auto it : stops)
         cout << it.x << ' ' << it.y << '\n';
-    }
 
     return 0;
 }
