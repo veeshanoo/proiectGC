@@ -1,4 +1,11 @@
 import matplotlib.pyplot as plt
+from lxml.doctestcompare import strip
+from random import randrange
+
+
+def rc():
+    return randrange(100) / 255
+
 
 coord = []
 
@@ -6,17 +13,19 @@ initial_coord = []
 viewx = 0
 viewy = 0
 
-with open("tst.in", "r") as fin:
-    for line in fin.readlines()[:-1]:
-        if len(line.split(" ")) != 2:
-            continue
-        (fi, se) = line.split(" ")
-        initial_coord.append([float(fi), float(se)])
+fin = open("snake.in", "r")
+n = int(fin.readline())
+poly = []
+for el in range(0, n):
+    line = strip(fin.readline())
+    print(line.split(" "))
+    (x, y) = line.split(" ")
 
+    initial_coord.append([float(x), float(y)])
 
-with open("tst.in", "r") as fin:
-    (viewx, viewy) = fin.readlines()[-1].split(" ")
-# (viewx, viewy) = fin.readlines()[-1].split(" ")
+(viewx, viewy) = strip(fin.readline()).split(" ")
+
+fin.close()
 
 with open("tst.out", "r") as fin:
     for line in fin.readlines():
@@ -42,7 +51,14 @@ plt.plot(ixs, iys, color="green")
 # fig, ax = plt.subplots()
 ax = plt.gca()
 
-circle = plt.Circle((viewx, viewy), 0.2, color='yellow')
+circle = plt.Circle((viewx, viewy), 0.01, color='yellow')
+# for point in coord:
+#     plt.fill([viewx, point[0]], [viewy, point[1]], color="black")
+
+triangles = [[[viewx, viewy], coord[i], coord[i + 1]] for i in range(0, len(coord) - 1)]
+
+for tr in triangles:
+    plt.fill([x[0] for x in tr], [x[1] for x in tr], color=(rc(), rc(), rc()))
 
 ax.add_artist(circle)
 
