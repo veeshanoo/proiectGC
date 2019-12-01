@@ -96,21 +96,7 @@ pair<Point, bool> getIsect(Point B) {
         return getDistSq(P, a.second) < getDistSq(P, b.second);
     });
 
-    // cout << B.x << ' ' << B.y << '\n';
-    // cout << "Points\n";
-    // for (auto it : stops) {
-    //     cout << it.second.x << ' ' << it.second.y << "  ";
-    // }
-    // cout << "\n\n";
 
-    Point ans;
-    // for (auto stop : stops) {
-    //     if (stop.first == false)
-    //         return stop.second;
-    //     ans = stop.second;
-    // }
-
-    // return ans;
     if (stops.empty())
         return {Point(0, 0), false}; 
     return {stops[0].second, true};
@@ -123,12 +109,6 @@ double delta(Point a, Point b, Point c) {
 int main() {
     ifstream cin("tst.in");
     ofstream cout("tst.out");
-    
-    // auto it = isect({0, 0}, {1, 1}, {1, 0}, {0, 1});
-    // cout << it.first << endl;
-    // cout << it.second.x << ' ' << it.second.y << endl;
-    // return 0;
-
 
     cin >> N;
     for (int i = 0; i < N; i++) {
@@ -142,33 +122,11 @@ int main() {
     vector<Point> stops;
     for (int i = 0; i < N; i++) {
         auto pt = pts[i];
-        // Point far = farAway(pt);
-        // cout << far.x << ' ' << far.y << '\n';
-
-
-        // dx = point[0] - view_p[0]
-        // rdy = point[1] - view_p[1]
-
-        // # for having the polygon in the trigonometric sorted order
-        // base_ang = atan2(rdy, rdx)
-        // ang = 0.0
-        // # cast 3 rays instead of one, for the case in which the ray touches and edge
-        // for i in range(0, 3):
-        //     if i == 0:
-        //         ang = base_ang - EPS
-        //     if i == 1:
-        //         ang = base_ang
-        //     if i == 2:
-        //         ang = base_ang + EPS
-        //     rdx = float64(MAX_DIST * cos(ang))
-        //     rdy = float64(MAX_DIST * sin(ang))
 
         double rdx = pt.x - P.x;
         double rdy = pt.y - P.y;
 
-        // double base_ang = atan2(rdx, rdy);
         for (int j = 0; j < 3; j++) {
-            cerr << i << ' ' << j << '\n';
             double newRdx = rdx;
             double newRdy = rdy;
             
@@ -187,12 +145,8 @@ int main() {
             auto [stop, status] = getIsect(far);
             if (status == false)
                 continue;
-            cerr << "done\n";
             stops.push_back(stop);
         }
-
-        // Point stop = getIsect(far);
-        // stops.push_back(stop);
     }
 
     sort(stops.begin(), stops.end(), [](Point a, Point b) {
@@ -203,51 +157,6 @@ int main() {
     for (auto it : stops) {
         cout << it.x << ' ' << it.y << '\n';
     }
-    return 0;
-
-    // for (auto it : stops) {
-    //     cout << it.x << ' ' << it.y << '\n';
-    // }
-
-    vector<Point> finalPolygon;
-    for (int i = 0; i < N; i++) {
-        vector<Point> newPts; 
-        Point A = pts[i];
-        Point B = pts[i + 1];
-        for (auto it : stops) {
-            if (abs(getDistSqrt(A, it) + getDistSqrt(B, it) - getDistSqrt(A, B)) < EPS) {
-                newPts.push_back(it);
-            }
-        }
-
-        sort(newPts.begin(), newPts.end(), [&](Point a, Point b) {
-            return getDistSqrt(A, a) < getDistSqrt(A, b);
-        });
-
-        finalPolygon.push_back(A);
-        for (auto it : newPts)
-            finalPolygon.push_back(it);
-        
-    }
-
-    // for (auto it : finalPolygon) {
-    //     cout << it.x << ' ' << it.y << '\n';
-    // }
-
-    // vector<Point> visiblePolygon;
-    // for (auto it : finalPolygon) {
-    //     auto pt = it;
-    //     Point far = farAway(pt);
-    //     // cout << far.x << ' ' << far.y << '\n';
-
-    //     Point stop = getIsect(far);
-    //     if (getDistSqrt(P, it) < getDistSqrt(P, stop) || abs(getDistSqrt(P, it) - getDistSqrt(P, stop)) < EPS) 
-    //         visiblePolygon.push_back(it);
-    // }
     
-    // for (auto it : visiblePolygon) {
-    //     cout << it.x << ' ' << it.y << '\n';
-    // }
-
     return 0;
 }
