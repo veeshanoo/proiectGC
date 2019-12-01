@@ -153,10 +153,10 @@ int main() {
         return delta(P, a, b) > 0;
     });
 
+    // stops.resize(distance(stops.begin(), unique(stops.begin(), stops.end())));
 
-    for (auto it : stops) {
+    for (auto it : stops)
         cout << it.x << ' ' << it.y << '\n';
-    }
-    
+
     return 0;
 }
