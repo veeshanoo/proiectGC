@@ -10,7 +10,7 @@
 using namespace std;
 
 const double EPS = 1e-6;
-const double ANG_EPS = 1e-5;
+const double ANG_EPS = 1e-4;
 const double MUL = 1e2;
 
 struct Point {
